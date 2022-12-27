@@ -19,12 +19,13 @@ class State(StatesGroup):
     choose_name = State()
     choose_company = State()
     get_check = State()
+    the_end = State()
 
 
 @dp.message_handler(commands=['start'])
 async def send_welcome(message: types.Message):
     db.add_line(id=message.from_id)
-    await message.answer("<strong>Привет!</strong>\n Ты регаешься на Новогодний бал БГУИР, вводи своё ФИО", parse_mode='HTML')
+    await message.answer("<strong>Привет!</strong>\n\nТы регаешься на Новогодний бал БГУИР! вводи своё <strong>ФИО</strong>", parse_mode='HTML')
     await State.choose_name.set()
 
 
@@ -32,7 +33,7 @@ async def send_welcome(message: types.Message):
 async def choose_name(message: types.Message):
     input = message.text.strip().title()
     db.edit_name(id=message.from_id, name=input)
-    await message.answer(f"Ты зареган под именем *{input}*\nТеперь введи название компании, в которую пожертвовал либо кидай ссылку", parse_mode='Markdown')
+    await message.answer(f"Ты зареган под именем <strong>{input}</strong>\nТеперь введи название организации, куда ты сделал пожертвование\n\n<i>либо кидай ссылку</i>", parse_mode='HTML')
     await State.choose_company.set()
 
 
@@ -40,25 +41,36 @@ async def choose_name(message: types.Message):
 async def choose_company(message: types.Message):
     input = message.text.strip()
     db.edit_company(message.from_id, input)
-    await message.answer(f"*Отлично!*\nПоследний шаг - пришли подтверждение\n\n_*скорее всего это фото чека_", parse_mode='Markdown')
+    await message.answer(f"*Отлично!*\n\nПоследний шаг - пришли нам чек, подтверждающий благотворительный взнос\n\n_*скорее всего это фото или pdf_", parse_mode='Markdown')
     await State.get_check.set()
     
 
 @dp.message_handler(state=State.get_check, content_types=['any'])
 async def choose_cost(message: types.Message):
-    await message.answer("Твой чек отправлен админу, ожидай подтверждения. По вопросам пиши @mlifefor в том числе по уточнению информации")
-    await bot.send_message(chat_id=TARGET_CHAT_ID, text='В бота прислали вот:')
+    await message.answer("*Твой чек принят!*\n\nЖдём тебя 29.12.2022 в фойе актового зала 2-го корпуса!\nРегистрация участников начнётся в 17:00, а начало мероприятия - в 18:00.\n\n_Если есть вопросы_ @mlifefor", parse_mode='Markdown')
+    user = db.get_user_by_id(message.from_id)
+    await bot.send_message(chat_id=TARGET_CHAT_ID, text=f"<strong>Отправил</strong>\n{user['name']}\n<strong>Организация</strong>\n{user['company']}", parse_mode='HTML')
     await bot.forward_message(chat_id=TARGET_CHAT_ID, from_chat_id=message.from_id, message_id=message.message_id)
     db.edit_sent_status(message.from_id, True)
+    await State.the_end.set()
+
+@dp.message_handler(state=State.the_end)
+async def choose_company(message: types.Message):
+    await message.answer(f"_Все вопросы_ @mlifefor", parse_mode='Markdown')
+
 
 
 @dp.message_handler(text='Да')
 async def choose_cos(message: types.Message):
     if TARGET_CHAT_ID == str(message.from_id):
+        if message.reply_to_message.forward_from == None:
+            await message.answer(f"Аккаунт закрыт", parse_mode='Markdown')
+            return
         who = message.reply_to_message.forward_from.id
-
         db.edit_active_status(who, True)
-        await bot.send_message(chat_id=who, text='Поздравляю, тебя подтвердили!')
+        await bot.send_message(chat_id=who, text='Поздравляю, твой чек подтверждён!')
+
+
     
 
 if __name__ == '__main__':
