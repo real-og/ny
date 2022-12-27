@@ -34,7 +34,7 @@ async def send_welcome(message: types.Message):
 
 Когда вы найдете организацию и пожертвуете ей какую-то сумму, вам необходимо будет прислать сюда скрин чека и название организации (бот подскажет).
 
-Будем рады увидеть вас на этом незабываемом вечере🎄""", parse_mode='HTML')
+Будем рады увидеть вас на этом незабываемом вечере🎄\n\n<i>Если есть вопросы</i> @bot_deal""", parse_mode='HTML')
     await message.answer("Теперь вводи своё <strong>ФИО:</strong>", parse_mode='HTML')
     await State.choose_name.set()
 
@@ -57,7 +57,7 @@ async def choose_company(message: types.Message):
 
 @dp.message_handler(state=State.get_check, content_types=['any'])
 async def choose_cost(message: types.Message):
-    await message.answer("<strong>Твой чек принят!</strong>\n\nЖдём тебя 29.12.2022 в фойе актового зала 2-го корпуса!\nРегистрация участников начнётся в 17:00, а начало мероприятия - в 18:00.\n\n<i>Если есть вопросы</i> @bot_deal", parse_mode='HTML')
+    await message.answer("<strong>Твой чек принят!</strong>\n\nЖдём тебя 29.12.2022 в фойе актового зала 2-го корпуса!\nРегистрация участников начнётся в 17:00, а начало мероприятия - в 18:00.", parse_mode='HTML')
     user = db.get_user_by_id(message.from_id)
     await bot.send_message(chat_id=TARGET_CHAT_ID, text=f"<strong>Отправил</strong>\n{user['name']}\n<strong>Организация</strong>\n{user['company']}", parse_mode='HTML')
     await bot.forward_message(chat_id=TARGET_CHAT_ID, from_chat_id=message.from_id, message_id=message.message_id)
