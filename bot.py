@@ -25,7 +25,17 @@ class State(StatesGroup):
 @dp.message_handler(commands=['start'])
 async def send_welcome(message: types.Message):
     db.add_line(id=message.from_id)
-    await message.answer("<strong>Привет!</strong>\n\nТы регаешься на Новогодний бал БГУИР! вводи своё <strong>ФИО</strong>", parse_mode='HTML')
+    await message.answer("""Привет, участник новогоднего бала ❣️
+
+Хотим напомнить тебе, что наш бал является благотворительным. Поэтому, чтобы принять в нём участие нужного немного побыть добродетелем!
+
+Мы не хотим тебя ограничивать, поэтому ты сам можешь выбирать сумму и организацию (помощь животным или людям) для пожертвования. 
+Если не знаешь никаких организаций, то мы можем предложить несколько, а ты сам выберешь, что тебе больше по душе ☺️
+
+Когда вы найдете организацию и пожертвуете ей какую-то сумму, вам необходимо будет прислать сюда скрин чека и название организации (бот подскажет).
+
+Будем рады увидеть вас на этом незабываемом вечере🎄""", parse_mode='HTML')
+    await message.answer("Теперь вводи своё <strong>ФИО:</strong>", parse_mode='HTML')
     await State.choose_name.set()
 
 
@@ -33,7 +43,7 @@ async def send_welcome(message: types.Message):
 async def choose_name(message: types.Message):
     input = message.text.strip().title()
     db.edit_name(id=message.from_id, name=input)
-    await message.answer(f"Ты зареган под именем <strong>{input}</strong>\nТеперь введи название организации, куда ты сделал пожертвование\n\n<i>либо кидай ссылку</i>", parse_mode='HTML')
+    await message.answer(f"Ты зареган под именем <strong>{input}</strong>\nТеперь введи название организации, куда ты сделал пожертвование\n\n<i>*либо кидай ссылку</i>", parse_mode='HTML')
     await State.choose_company.set()
 
 
@@ -41,13 +51,13 @@ async def choose_name(message: types.Message):
 async def choose_company(message: types.Message):
     input = message.text.strip()
     db.edit_company(message.from_id, input)
-    await message.answer(f"*Отлично!*\n\nПоследний шаг - пришли нам чек, подтверждающий благотворительный взнос\n\n_*скорее всего это фото или pdf_", parse_mode='Markdown')
+    await message.answer(f"<strong>Отлично!</strong>\n\nПоследний шаг - пришли нам чек, подтверждающий благотворительный взнос\n\n<i>*скорее всего это фото или pdf</i>", parse_mode='HTML')
     await State.get_check.set()
     
 
 @dp.message_handler(state=State.get_check, content_types=['any'])
 async def choose_cost(message: types.Message):
-    await message.answer("*Твой чек принят!*\n\nЖдём тебя 29.12.2022 в фойе актового зала 2-го корпуса!\nРегистрация участников начнётся в 17:00, а начало мероприятия - в 18:00.\n\n_Если есть вопросы_ @mlifefor", parse_mode='Markdown')
+    await message.answer("<strong>Твой чек принят!</strong>\n\nЖдём тебя 29.12.2022 в фойе актового зала 2-го корпуса!\nРегистрация участников начнётся в 17:00, а начало мероприятия - в 18:00.\n\n<i>Если есть вопросы</i> @bot_deal", parse_mode='HTML')
     user = db.get_user_by_id(message.from_id)
     await bot.send_message(chat_id=TARGET_CHAT_ID, text=f"<strong>Отправил</strong>\n{user['name']}\n<strong>Организация</strong>\n{user['company']}", parse_mode='HTML')
     await bot.forward_message(chat_id=TARGET_CHAT_ID, from_chat_id=message.from_id, message_id=message.message_id)
@@ -56,7 +66,7 @@ async def choose_cost(message: types.Message):
 
 @dp.message_handler(state=State.the_end)
 async def choose_company(message: types.Message):
-    await message.answer(f"_Все вопросы_ @mlifefor", parse_mode='Markdown')
+    await message.answer(f"<i>Все вопросы</i> @bot_deal", parse_mode='HTML')
 
 
 
