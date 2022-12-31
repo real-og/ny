@@ -7,7 +7,7 @@ import db
 logging.basicConfig(level=logging.INFO)
 
 # API_TOKEN = str(os.environ.get('BOT_TOKEN'))
-API_TOKEN = '5812681090:AAGQligbH6ptDWILpvm1WWhBHi7a-DQ4UKA'
+API_TOKEN = '5965118056:AAGsKaJ9k98B-LdCcYtq8Wj2ejvYL5MRjbU'
 TARGET_CHAT_ID = '277961206'
 
 storage = MemoryStorage()
